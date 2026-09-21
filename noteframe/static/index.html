@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#174f43" />
+    <meta
+      name="description"
+      content="Save the actual writing, slides and diagrams from a video in your own visual notebook."
+    />
+    <title>NoteFrame — Your video, in notes.</title>
+    <link rel="icon" href="/static/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/static/style.css" />
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="topbar">
+      <a href="#" class="brand" aria-label="NoteFrame home"
+        ><img
+          src="/static/icon.svg"
+          alt=""
+          width="30"
+          height="30"
+        />NoteFrame<span class="beta">LOCAL</span></a
+      >
+      <nav aria-label="Main navigation">
+        <a href="#library">Your library</a
+        ><a href="#new" class="nav-new">+ New notebook</a>
+      </nav>
+    </header>
+    <main id="main">
+      <section id="home">
+        <div class="intro">
+          <p class="eyebrow">FROM THE SCREEN. ON YOUR SHELF.</p>
+          <h1>Keep what’s<br />on the <em>board.</em></h1>
+          <p class="lead">
+            The diagrams. The handwritten explanation. That one slide.<br
+              class="desktop"
+            />
+            Turn a YouTube lecture into notes you can come back to.
+          </p>
+        </div>
+        <section class="composer" aria-labelledby="composer-title" id="new">
+          <div class="composer-heading">
+            <h2 id="composer-title">Start with a video</h2>
+            <span class="small muted">Saved on your computer</span>
+          </div>
+          <form id="extract-form">
+            <label for="video-url" class="sr-only">YouTube video link</label>
+            <div class="url-row">
+              <span class="link-icon" aria-hidden="true">↗</span
+              ><input
+                id="video-url"
+                name="url"
+                type="url"
+                required
+                autocomplete="off"
+                placeholder="Paste a YouTube video link…"
+              /><button type="submit" class="primary" id="extract-button">
+                Extract notes <span aria-hidden="true">→</span>
+              </button>
+            </div>
+            <fieldset class="presets">
+              <legend>What’s in the video?</legend>
+              <label class="preset"
+                ><input type="radio" name="preset" value="board" checked /><span
+                  ><strong>Whiteboard & writing</strong
+                  ><small>Focus on the central board</small></span
+                ></label
+              >
+              <label class="preset"
+                ><input type="radio" name="preset" value="slides" /><span
+                  ><strong>Slides & screen shares</strong
+                  ><small>Compare the whole screen</small></span
+                ></label
+              >
+              <label class="preset"
+                ><input type="radio" name="preset" value="detailed" /><span
+                  ><strong>Detailed capture</strong
+                  ><small>More views, slower processing</small></span
+                ></label
+              >
+            </fieldset>
+            <div class="form-bottom">
+              <p id="preset-description">
+                Best for a central board with browser controls or a speaker in
+                the top corner. Exports keep the full picture.
+              </p>
+              <label class="quality"
+                >Quality
+                <select id="quality" aria-label="Capture quality">
+                  <option value="1080">1080p</option>
+                  <option value="720">720p · smaller files</option>
+                </select></label
+              >
+            </div>
+            <p id="form-error" class="error" role="alert" hidden></p>
+            <p id="setup-warning" class="notice" hidden></p>
+          </form>
+        </section>
+        <div class="how-it-works">
+          <span><b>01</b> Paste your link</span
+          ><span><b>02</b> Capture visible notes</span
+          ><span><b>03</b> Browse, revisit, download</span>
+        </div>
+        <section class="library" id="library" aria-labelledby="library-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">YOUR COLLECTION</p>
+              <h2 id="library-title">A little less rewinding.</h2>
+            </div>
+            <span id="library-count" class="small muted"></span>
+          </div>
+          <div id="library-grid" class="library-grid"></div>
+        </section>
+      </section>
+      <section id="notebook" hidden>
+        <a href="#library" class="back">← Your library</a>
+        <div id="notebook-heading"></div>
+        <div id="job-progress"></div>
+        <div id="notes-content" hidden>
+          <div class="toolbar">
+            <label
+              >Jump to
+              <select id="hour-filter">
+                <option value="all">All hours</option>
+              </select></label
+            ><label class="search-label"
+              ><span class="sr-only">Find page number or timestamp</span
+              ><input
+                id="page-search"
+                type="search"
+                placeholder="Page number or timestamp"
+            /></label>
+            <div class="view-switch" role="group" aria-label="Notes layout">
+              <button id="grid-view" aria-pressed="true" title="Grid view">
+                ▦ <span>Grid</span></button
+              ><button
+                id="reading-view"
+                aria-pressed="false"
+                title="Reading view"
+              >
+                ☰ <span>Read</span>
+              </button>
+            </div>
+            <span id="page-count" class="small muted" aria-live="polite"></span>
+          </div>
+          <div id="notes-grid" class="notes-grid"></div>
+          <div class="pagination">
+            <button id="load-more" class="secondary" hidden>
+              Show more notes
+            </button>
+          </div>
+          <p class="note-limit">
+            These are original screen captures. Some overlapping or partial
+            views may remain, and brief content between samples can be missed.
+            Page/time search does not search handwriting.
+          </p>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <a class="footer-brand" href="#">NoteFrame</a
+      ><span>Original notes. Your own pace.</span
+      ><span class="footer-right">Captured locally · No AI keys needed</span>
+    </footer>
+    <dialog id="reader" aria-labelledby="reader-title">
+      <div class="reader-bar">
+        <span id="reader-title"></span>
+        <div>
+          <a id="reader-source" target="_blank" rel="noopener noreferrer"
+            >Watch this moment ↗</a
+          ><a id="reader-original" target="_blank" rel="noopener"
+            >Full resolution ↗</a
+          ><button id="reader-close" aria-label="Close page">✕</button>
+        </div>
+      </div>
+      <div class="reader-image"><img id="reader-img" alt="" /></div>
+      <div class="reader-bottom">
+        <button id="reader-prev" class="secondary">← Previous</button
+        ><span class="small muted">Use ← → to turn pages</span
+        ><button id="reader-next" class="secondary">Next →</button>
+      </div>
+    </dialog>
+    <dialog id="delete-dialog" aria-labelledby="delete-title">
+      <h2 id="delete-title">Remove this notebook?</h2>
+      <p>
+        Its extracted images and PDFs will be removed from this local library.
+      </p>
+      <div class="dialog-actions">
+        <button id="delete-no" class="secondary">Keep notebook</button
+        ><button id="delete-yes" class="danger">Remove notebook</button>
+      </div>
+    </dialog>
+    <div id="toast" role="status" hidden></div>
+  </body>
+</html>
