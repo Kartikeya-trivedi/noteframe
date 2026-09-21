@@ -18,3 +18,17 @@ jobs:
       - run: python -m ruff check .
       - run: node --check noteframe/static/app.js
       - run: python -m pytest -q
+  windows-bootstrap:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install local runtimes and dependencies
+        shell: cmd
+        run: setup.bat -LocalTools -NoPause
+      - name: Verify an already prepared environment
+        shell: cmd
+        run: start.bat -Check -LocalTools -NoPause
+      - name: Exercise bootstrap failure handling
+        shell: powershell
+        run: ./tests/windows.ps1

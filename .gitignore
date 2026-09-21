@@ -1,5 +1,8 @@
 .venv/
 .data/
+.tools/
+.logs/
+.venv.backup-*/
 __pycache__/
 *.py[cod]
 *.egg-info/

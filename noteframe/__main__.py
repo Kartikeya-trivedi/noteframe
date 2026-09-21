@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import shutil
+import threading
 import uuid
 from pathlib import Path
 
@@ -86,6 +87,7 @@ def main():
     sub = parser.add_subparsers(dest="command")
     serve = sub.add_parser("serve", help="Open the local web app")
     serve.add_argument("--port", type=int, default=8767)
+    serve.add_argument("--open-browser", action="store_true", help="Open the UI once the server is ready")
     imp = sub.add_parser("import", help="Import a previously extracted notes folder")
     imp.add_argument("folder", type=Path)
     imp.add_argument("--title", required=True)
@@ -99,9 +101,17 @@ def main():
     else:
         import uvicorn
 
+        from .browser import open_when_ready
         from .server import create_app
 
-        uvicorn.run(create_app(args.data_dir), host="127.0.0.1", port=getattr(args, "port", 8767))
+        port = getattr(args, "port", 8767)
+        stopped = threading.Event()
+        if getattr(args, "open_browser", False):
+            threading.Thread(target=open_when_ready, args=(port, stopped), daemon=True).start()
+        try:
+            uvicorn.run(create_app(args.data_dir), host="127.0.0.1", port=port)
+        finally:
+            stopped.set()
 
 
 if __name__ == "__main__":

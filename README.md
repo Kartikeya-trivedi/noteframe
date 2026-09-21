@@ -6,7 +6,53 @@ Paste a YouTube link and turn the actual visible handwriting, slides, diagrams a
 
 NoteFrame runs on your computer. It does not need an AI API key, generate summaries, or send your extracted notes to a hosted service.
 
-## Start locally
+## Windows: double-click to start
+
+1. [Download the project ZIP](https://github.com/Kartikeya-trivedi/noteframe/archive/refs/heads/main.zip) and **Extract All** into a writable local folder. Do not run a BAT from inside the ZIP. Git users can clone the repository instead.
+2. Double-click **`start.bat`**. It checks your tools, downloads anything missing, prepares the Python environment, and opens NoteFrame once the server is ready.
+3. Keep the console window open while using the app. Press **Ctrl+C** to stop the server.
+
+For a separate install/repair step, double-click **`setup.bat`**, wait for “Setup complete”, and then run **`start.bat`**.
+
+**Supported automatic setup: Windows 10/11 x64, with Windows PowerShell 5.1 or later and internet access on the first run.** You do not need administrator access, Git, winget, or a preinstalled Python. `start.bat` uses Windows PowerShell already included in Windows.
+
+### What the scripts do
+
+- Reuse compatible Python **3.11–3.14 x64**, Node.js **22+**, and FFmpeg/ffprobe installations. Microsoft Store Python aliases and incompatible Python builds are skipped.
+- Download missing tools into **`.tools/`**: the official CPython NuGet distribution, Node.js from nodejs.org, and the Gyan FFmpeg build linked by FFmpeg's download page. Archive versions and SHA-256 hashes are pinned in [`scripts/windows/downloads.json`](scripts/windows/downloads.json).
+- Verify every archive before extracting or executing it; reject unsafe ZIP paths; retry failed downloads up to three times. Interrupted `.partial` downloads are retried, not treated as completed files.
+- Create **`.venv/`**, install Python dependencies, run import checks and `pip check`, and only then mark setup complete. An invalid environment is moved to a timestamped `.venv.backup-*` folder instead of being deleted. A partially installed environment is repaired on the next run.
+- Avoid package downloads on an ordinary launch when the environment and project dependency definition still match. `setup.bat` explicitly reruns package installation to repair/check the environment.
+- Keep tool paths local to the launched process. They do not change your system PATH, install Windows packages, change registry settings, or permanently change PowerShell execution policy. The BAT wrapper sets execution policy only for its own PowerShell process.
+- Save diagnostic output in **`.logs/`**, block competing launchers for the same folder, report occupied ports without killing another process, and preserve **`.data/`** notes.
+
+### Command-line options
+
+Run these from the extracted project folder in Command Prompt or PowerShell:
+
+| Command | Action |
+| --- | --- |
+| `.\setup.bat` | Install or repair dependencies only |
+| `.\start.bat` | Prepare if needed, start, and open the browser |
+| `.\start.bat -Check -NoPause` | Check installed dependencies without downloading or starting |
+| `.\start.bat -NoBrowser` | Start without opening a browser |
+| `.\start.bat -Port 8768` | Use a different free port |
+| `.\setup.bat -LocalTools -NoPause` | Download local tools even if compatible system tools exist |
+
+`-NoPause` disables the closing “Press Enter” prompt for automation. `-LocalTools` chooses local runtimes; a healthy existing `.venv` is retained. The older `start.ps1` entry point forwards to the same launcher.
+
+### If setup fails
+
+- **Window reports an error:** read the final message and the newest `.logs/` file. Rerun `setup.bat` after fixing the cause; do not delete your `.data` folder.
+- **Download/hash error:** check your connection, Windows clock, proxy/firewall, and available disk space. The scripts do not bypass TLS or hash verification. Corporate policy or antivirus restrictions may need your administrator's help.
+- **Port already in use:** use the app that is already running, or stop that app yourself. Only use `-Port` to change a free port; do not run two servers against the same notes directory.
+- **Project moved or Python removed:** rerun setup. An unusable environment is preserved as a backup and recreated. After checking the new environment, you may manually remove old `.venv.backup-*` folders to reclaim space.
+- **Very long or protected path:** move the extracted project to a short writable local path, such as `C:\Users\YourName\NoteFrame`. UNC/network shares and automatic ARM64/32-bit installation are not supported.
+- **App started manually with Python:** stop it before running setup/repair. The shared launcher lock covers BAT/PowerShell launchers, not independently started Python processes.
+
+No installer can guarantee success on every locked-down or damaged Windows installation. These scripts fail with an error and log rather than reporting a failed install as successful.
+
+## Manual setup / macOS / Linux
 
 You need **Python 3.11+**, **FFmpeg** (including `ffprobe`), and **Node.js 22+** or a supported Deno runtime on your `PATH`. Node/Deno lets yt-dlp handle YouTube's JavaScript challenges. See the [yt-dlp runtime guide](https://github.com/yt-dlp/yt-dlp/wiki/EJS).
 
@@ -18,7 +64,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m noteframe serve
 ```
 
-Open **http://127.0.0.1:8767**. On subsequent runs, `./start.ps1` starts the Windows app. Stop the server with `Ctrl+C`.
+Open **http://127.0.0.1:8767**. Stop the server with `Ctrl+C`. Add `--open-browser` to open the UI automatically after startup.
 
 On macOS/Linux, activate with `source .venv/bin/activate`, install with `python -m pip install -e .`, and run `python -m noteframe serve`.
 
@@ -72,6 +118,14 @@ node --check noteframe/static/app.js
 ```
 
 Tests cover allowed/rejected URLs, cross-origin writes, artifact access, job cancellation and restart state, duplicate selection, stalled subprocess cancellation, and a real FFmpeg → images → timestamped PDF pipeline using a generated video. FFmpeg integration is skipped if FFmpeg is absent; CI installs it explicitly. No network is needed for these tests.
+
+Windows bootstrap checks run on Windows PowerShell 5.1:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests\windows.ps1
+```
+
+They cover checksum rejection, retry limits, partial-download cleanup, archive traversal, special-character paths, environment backup, exit codes, and port conflicts. CI also runs the real Windows dependency bootstrap with local tools and checks it a second time. Download manifests should only be updated after verifying the archive sources and hashes; do not disable verification to work around a mismatch.
 
 The interface uses plain HTML/CSS/JavaScript served by FastAPI: no frontend build step. `noteframe/pipeline.py` performs extraction; `jobs.py` handles the persistent local queue; `server.py` serves the API and artifacts.
 

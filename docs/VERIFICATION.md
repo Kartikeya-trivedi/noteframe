@@ -15,3 +15,9 @@ The imported lecture was not downloaded or fully re-extracted during this app bu
 Two upstream deprecation warnings were emitted by Starlette's HTTPX/AnyIO test-client integration. They did not fail the tests.
 
 `requirements-dev.lock.txt` records the versions installed for this verification, excluding the local editable project path. It is a Windows development environment snapshot, not a cross-platform hash-locked distribution.
+
+## Windows launchers
+
+The Windows BAT bootstrap was exercised using Windows PowerShell 5.1 in an isolated copy whose path contained spaces, parentheses, an ampersand, square brackets and an exclamation mark. Forced local setup unpacked CPython 3.13.15, downloaded and hash-verified Node.js 22.23.2 and FFmpeg 9.0.2, created a fresh virtual environment, installed dependencies and passed `pip check`. A second dependency check succeeded, and the actual BAT launcher started a separate server without reinstalling packages.
+
+Seventeen PowerShell bootstrap checks passed, covering path boundaries, unusual directory names, known/corrupt hashes, offline cache reuse, bounded retries, partial-download cleanup, malicious archive traversal, environment backups, native exit codes, port collisions and PowerShell 5.1 parsing. The Python suite increased to 19 passing tests with browser-readiness coverage. These are tested scenarios, not a guarantee across every Windows configuration, proxy, antivirus product or corporate policy.

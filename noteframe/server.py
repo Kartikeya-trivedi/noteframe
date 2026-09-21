@@ -61,7 +61,7 @@ def create_app(data_dir=None, runner=None):
     def health():
         dependencies = {name: bool(shutil.which(name)) for name in ["ffmpeg", "ffprobe"]}
         dependencies["javascript"] = bool(shutil.which("node") or shutil.which("deno"))
-        return {"ready": all(dependencies.values()), "dependencies": dependencies}
+        return {"app": "noteframe", "ready": all(dependencies.values()), "dependencies": dependencies}
 
     @app.get("/api/jobs")
     def list_jobs():
