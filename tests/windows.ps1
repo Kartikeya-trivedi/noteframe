@@ -78,3 +78,5 @@ foreach ($path in @(Get-ChildItem -LiteralPath (Join-Path $root 'scripts\windows
     Assert-True ($parseErrors.Count -eq 0) "$($path.Name) parses on Windows PowerShell 5.1"
 }
 Write-Host "$script:Passed Windows bootstrap checks passed. Fixtures retained at $sandbox"
+# The intentional nonzero-process test must not leak its exit code to CI's shell wrapper.
+exit 0
